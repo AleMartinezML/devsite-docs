@@ -1,30 +1,90 @@
-# Proceso de Homologación
-
-Es el proceso mediante el cual el equipo de integraciones realiza una validación de la calidad de la integración. 
-Un integrante del equipo ejecuta un control, dependiendo del producto integrado, y avanza punto por punto chequeando si se cumplió o no con ese requerimiento con el fin de obtener un nota por la integración.
-
-## ¿Por qué es importante la homologación?
-
-Una correcta integración tiene impacto tanto en la conversión como en la aprobación de pagos, y contribuye a evitar problemas operativos. 
-A su vez, se revisan distintos factores que impactan directamente en los sistemas de fraude de Mercado Pago, lo que permite lograr una mayor aprobación reduciendo el riesgo de fraude (contracargos). 
-
-## ¿Cuál es el objetivo?
-El objetivo de la homologación es asegurar la calidad de la integración y para lograrlo nos apoyamos en un sistema de puntos.
-Además de los puntos que se suman de manera directa, existen buenas prácticas que suman puntos extras que son los que le permitirán llegar al puntaje necesario para hacer el Go Live.
+# ¿Qué debo tener en cuenta para que mi integración esté completa?
 
 
-## ¿Qué se revisa durante la Homologación?
-- Flujos y experiencias de pago.
-- Aspectos que implican garantizar una integración segura.
-- Aspectos que ayudan a nuestros sistemas de fraude ha ser más efectivos. 
-
-### Validaciones que aplican a todos los Checkouts de Mercado Pago
-Los diferentes Checkouts de Mercado Pago son: Checkout Pro, Checkout Tokenizer o Checkout API.
-
-Sea cuál sea el Checkout integrado que hayan realizado:  
-- Se realizan pruebas de pagos aprobados y pagos rechazados con tarjetas. 
-- Se comprueba el uso del campo _external_reference_ para facilitar la conciliación de tus transacciones.
-- Se comprueba el uso de notificaciones de pago (IPN o Webhooks) para automatizar la conciliación de transacciones.
+Para todos los productos de Mercado Pago se deben validar los siguientes aspectos:
 
 
+- Seguridad de la integración:
+	* Uso de certificado SSL en el sitio
+	* Protocolo TLS 1.2 o superior
+- Efectividad de nuestros sistemas de fraude:
+	* Envío de información del pagador, item, envío y de industria en el pago.
+		* [Documentación checkout PRO](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-pro/advanced-integration#bookmark_informaci%C3%B3n_adicional_para_la_preferencia)
+		* [Documentación checkout API / Web Tokenize](https://www.mercadopago.com.ar/developers/es/guides/manage-account/account/payment-rejections/#bookmark_recomendaciones_para_mejorar_tu_aprobaci%C3%B3n)
+	* Uso del [script de seguridad](https://www.mercadopago.com.ar/developers/es/guides/manage-account/account/payment-rejections#bookmark_recomendaciones_para_mejorar_tu_aprobaci%C3%B3n) en las páginas del ecommerce para mejora de aprobación.
+	* Envío de información del dispositivo al generar el pago  
+- Gestión de cuenta: Sugerimos implementar acciones de gestión de cuenta como [devoluciones, cancelaciones](https://www.mercadopago.cl/developers/es/guides/manage-account/account/cancellations-and-refunds/) y manejo de [contracargos](https://www.mercadopago.cl/developers/es/guides/manage-account/account/chargebacks#bookmark_gestiona_tus_contracargos_por_api) para automatizar estos procesos desde tus sistemas. En caso de que no estén implementados, puedes gestionar estas acciones manualmente desde el backoffice de Mercado Pago. 
 
+- Conciliación de pagos/órdenes: 
+	* Utiliza el campo [_`external_reference`_] en la preferencia o en el pago para facilitar la conciliación de tus transacciones.
+	* Utiliza y procesa correctamente las notificaciones de pago ([IPN](https://www.mercadopago.cl/developers/es/guides/notifications/ipn) o [Webhooks](https://www.mercadopago.cl/developers/es/guides/notifications/webhooks)) para actualizar el estado de las órdenes.
+	* Utiliza los [reportes](https://www.mercadopago.cl/developers/es/guides/manage-account/reports/general-considerations/reconciliation-reports): El uso de reportes puede implementarse por [API](https://www.mercadopago.cl/developers/es/guides/manage-account/reports/available-money/api/) o manualmente desde el backoffice de mercadopago. También pueden configurarse como SFTP.
+
+
+A continuación encontrarás una serie puntos que debes tener en cuenta de acuerdo al producto que estés integrando:
+
+
+###Checkout Pro
+
+Realiza [pruebas](https://www.mercadopago.cl/developers/es/guides/online-payments/checkout-pro/test-integration/#bookmark_c%C3%B3mo_probar_mi_integraci%C3%B3n) de pagos aprobados y rechazados.
+
+* En caso de no estar utilizando el modo binario, ten en cuenta que los pagos pueden cambiar de estado *in_process* a *approved*.
+* Verifica en todos los casos que la [redirección](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-pro/advanced-integration#bookmark_url_de_retorno) esté funcionando correctamente ( aplica sólo en apertura redirect).
+
+Si tienes un marketplace, verifica las [validaciones sobre marketplace](###Marketplace).
+
+
+
+###Checkout API
+
+Realiza [pruebas](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-api/testing) de pagos aprobados y rechazados.
+
+* En caso de no estar utilizando el modo binario, ten en cuenta que los pagos pueden cambiar de estado *in_process* a *approved*.
+* Verifica en todos los casos que las páginas de éxito/rechazo de la transacción estén funcionando correctamente. Revisa la documentación sobre [manejo de respuestas.
+](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-api/handling-responses)
+* Asegúrate de no incluir el atributo name al crear un formulario de tarjeta para cuidar la seguridad de los datos.
+
+Si tienes un marketplace, verifica las [validaciones sobre marketplace](###Marketplace).
+Si estas utilizando el flujo de usuarios y tarjetas, verifica las [validaciones sobre el flujo de [clientes y tarjetas](###Usuarios-y-Tarjetas).
+
+
+###Web Tokenize Checkout
+
+Realiza [pruebas](https://www.mercadopago.com.ar/developers/es/guides/online-payments/web-tokenize-checkout/testing) de pagos aprobados y rechazados.
+
+* En caso de no estar utilizando el modo binario, ten en cuenta que los pagos pueden cambiar de estado *in_process* a *approved*.
+* Verifica en todos los casos que las páginas de éxito/rechazo de la transacción estén funcionando correctamente. Revisa la documentación sobre [manejo de respuestas.
+](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-api/handling-responses)
+
+Si tienes un marketplace, verifica las [validaciones sobre marketplace](###Marketplace).
+Si estas utilizando el flujo de usuarios y tarjetas, verifica las [validaciones sobre el flujo de [clientes y tarjetas](###Usuarios-y-Tarjetas).
+
+
+			
+###Usuarios y Tarjetas
+* Debes tener un flujo para vinculación y desvinculación de tarjetas del sitio.
+* La experiencia debe ser clara, segura, y amigable para el cliente. 
+* Realiza pagos con tarjetas de crédito guardadas. 
+
+
+
+###Marketplace
+* Debe funcionar el flujo oAuth de vinculación y desvinculación del vendedor al marketplace.
+* Revisa el flujo de renovación de token de vinculación.
+* Los pagos que crees pueden ser [encontrados via api](https://www.mercadopago.cl/developers/es/reference/payments/_payments_id/get/) utilizando las credenciales de vinculación del vendedor y utilizando las credenciales del marketplace.
+
+
+[Documentación sobre vinculación de cuentas](https://www.mercadopago.com.ar/developers/es/guides/online-payments/marketplace/checkout-pro/create-marketplace#bookmark_2._vinculaci%C3%B3n_de_cuentas)
+			
+####Split de pagos
+- Se verifica que la liberación del dinero esté configurada correctamente.
+								
+###Modo de operación Gateway
+Recuerda que si estas utilizando el modo de operacion Gateway vamos a corroborar que estes enviando los campos [_`merchant_account_id`_] y [_`payment_method_option_id`_].		
+
+
+## ¿Qué debo tener a mano para validar todo esto?
+* Tener tu sitio de prueba funcionando.
+* [Credenciales](https://www.mercadopago.com/developers/es/guides/resources/faqs/credentials) de test.
+* Tener a mano las tarjetas de prueba.
+* [Usuarios de prueba](https://www.mercadopago.com.ar/developers/es/guides/online-payments/checkout-pro/test-integration#bookmark_c%C3%B3mo_crear_usuarios) (si es necesario).
